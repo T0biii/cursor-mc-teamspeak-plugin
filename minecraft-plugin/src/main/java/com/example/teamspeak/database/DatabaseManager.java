@@ -146,6 +146,14 @@ public class DatabaseManager {
         }
     }
 
+    /**
+     * Gets the HikariDataSource instance
+     * @return The HikariDataSource instance
+     */
+    public HikariDataSource getDataSource() {
+        return dataSource;
+    }
+
     // Account Linking Methods
     public CompletableFuture<Boolean> linkAccounts(UUID minecraftUuid, String minecraftUsername, String teamspeakUid, String teamspeakUsername) {
         return CompletableFuture.supplyAsync(() -> {

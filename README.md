@@ -23,6 +23,9 @@ This project provides integration between Minecraft and TeamSpeak 3 servers, all
 
 ```
 .
+├── .github/
+│   └── workflows/
+│       └── build.yml
 ├── docker-compose.yml
 ├── minecraft-plugin/
 │   ├── src/
@@ -45,6 +48,34 @@ This project provides integration between Minecraft and TeamSpeak 3 servers, all
    - If using SQLite: Just start your Minecraft server with the plugin installed
 5. The Minecraft server will be available at `localhost:25565`
 6. If using PostgreSQL, the database will be available at `localhost:5432`
+
+## Building the Plugin
+
+### Manual Build
+
+To build the plugin manually:
+
+```bash
+cd minecraft-plugin
+mvn clean package
+```
+
+The compiled JAR file will be available in the `target` directory.
+
+### Automated Build with GitHub Actions
+
+This project uses GitHub Actions to automatically build the plugin on every push to the main branch and on pull requests. The workflow:
+
+1. Checks out the code
+2. Sets up JDK 17
+3. Builds the plugin with Maven
+4. Uploads the JAR file as an artifact
+
+You can download the latest build from the GitHub Actions page:
+1. Go to the "Actions" tab in the repository
+2. Select the latest successful workflow run
+3. Scroll down to the "Artifacts" section
+4. Download the "teamspeak-integration" artifact
 
 ## Database Options
 
