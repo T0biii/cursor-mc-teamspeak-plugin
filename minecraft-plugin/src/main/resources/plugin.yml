@@ -1,0 +1,29 @@
+name: TeamSpeakIntegration
+version: '${project.version}'
+main: com.example.teamspeak.TeamSpeakIntegration
+api-version: '1.20'
+authors: [YourName]
+description: Integrates Minecraft with TeamSpeak 3 server
+commands:
+  ts:
+    description: Main command for TeamSpeak integration
+    usage: /<command> [link|unlink|list|help]
+    permission: teamspeak.use
+  tsadmin:
+    description: Admin commands for TeamSpeak integration
+    usage: /<command> [reload|update|status]
+    permission: teamspeak.admin
+
+permissions:
+  teamspeak.use:
+    description: Allows using basic TeamSpeak integration features
+    default: true
+  teamspeak.admin:
+    description: Allows using admin TeamSpeak integration features
+    default: op
+  teamspeak.link:
+    description: Allows linking Minecraft account with TeamSpeak
+    default: true
+  teamspeak.unlink:
+    description: Allows unlinking Minecraft account from TeamSpeak
+    default: true 

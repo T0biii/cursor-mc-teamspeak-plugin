@@ -1,0 +1,53 @@
+# TeamSpeak Integration Configuration
+
+# TeamSpeak Server Settings
+teamspeak:
+  host: "localhost"
+  port: 10011
+  username: "serverquery"
+  password: "your_query_password"
+  virtual_server_id: 1
+  update_interval: 30  # seconds
+
+# Database Settings
+database:
+  type: "sqlite"  # Options: "postgres" or "sqlite"
+  # PostgreSQL settings (only used if type is "postgres")
+  postgres:
+    host: "postgres"
+    port: 5432
+    database: "minecraft_teamspeak"
+    username: "minecraft"
+    password: "minecraft"
+    pool_size: 10
+    connection_timeout: 30000  # milliseconds
+  # SQLite settings (only used if type is "sqlite")
+  sqlite:
+    file: "plugins/TeamSpeakIntegration/database.db"
+    pool_size: 5
+    connection_timeout: 30000  # milliseconds
+
+# Role Mapping
+role_mappings:
+  "admin":
+    - 1  # Server Group ID for admins
+  "moderator":
+    - 2  # Server Group ID for moderators
+  "vip":
+    - 3  # Server Group ID for VIP players
+
+# Cache Settings
+cache:
+  enabled: true
+  max_size: 1000
+  expire_after: 3600  # seconds
+
+# Messages
+messages:
+  prefix: "&8[&bTS&8] &r"
+  link_success: "&aSuccessfully linked your Minecraft account with TeamSpeak!"
+  link_failed: "&cFailed to link accounts. Please make sure you're connected to TeamSpeak."
+  unlink_success: "&aSuccessfully unlinked your Minecraft account from TeamSpeak."
+  not_linked: "&cYour account is not linked to TeamSpeak."
+  already_linked: "&cYour account is already linked to TeamSpeak."
+  invalid_code: "&cInvalid verification code. Please try again." 

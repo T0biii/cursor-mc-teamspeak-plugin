@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  minecraft:
+    image: itzg/minecraft-server
+    ports:
+      - "25565:25565"
+    environment:
+      EULA: "TRUE"
+      TYPE: "PAPER"
+      VERSION: "1.20.4"
+      MEMORY: "2G"
+      OVERRIDE_SERVER_PROPERTIES: "true"
+      ONLINE_MODE: "false"
+      ENABLE_RCON: "true"
+      RCON_PASSWORD: "minecraft"
+      RCON_PORT: "25575"
+    volumes:
+      - ./minecraft-data:/data
+      - ./minecraft-plugin/target/TeamSpeakIntegration.jar:/data/plugins/TeamSpeakIntegration.jar
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: minecraft_teamspeak
+      POSTGRES_USER: minecraft
+      POSTGRES_PASSWORD: minecraft
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  postgres-data:
+  minecraft-data: 
