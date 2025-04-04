@@ -1,6 +1,7 @@
 package com.example.teamspeak.commands;
 
 import com.example.teamspeak.TeamSpeakIntegration;
+import com.example.teamspeak.teamspeak.TeamSpeakUser;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;

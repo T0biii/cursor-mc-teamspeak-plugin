@@ -58,6 +58,13 @@
             <artifactId>HikariCP</artifactId>
             <version>5.0.1</version>
         </dependency>
+
+        <!-- TeamSpeak Query API -->
+        <dependency>
+            <groupId>com.github.theholywaffle</groupId>
+            <artifactId>teamspeak3-api</artifactId>
+            <version>1.3.0</version>
+        </dependency>
     </dependencies>
 
     <build>

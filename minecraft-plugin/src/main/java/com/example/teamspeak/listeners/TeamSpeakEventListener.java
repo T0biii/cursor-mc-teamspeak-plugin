@@ -2,28 +2,30 @@ package com.example.teamspeak.listeners;
 
 import com.example.teamspeak.TeamSpeakIntegration;
 import com.example.teamspeak.teamspeak.TeamSpeakUser;
-import com.github.theholydevil.teamspeak.TeamspeakQuery;
+import com.github.theholywaffle.teamspeak3.TS3Api;
+import com.github.theholywaffle.teamspeak3.api.wrapper.Client;
 
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public class TeamSpeakEventListener {
     private final TeamSpeakIntegration plugin;
-    private final TeamspeakQuery query;
+    private final TS3Api api;
 
-    public TeamSpeakEventListener(TeamSpeakIntegration plugin, TeamspeakQuery query) {
+    public TeamSpeakEventListener(TeamSpeakIntegration plugin, TS3Api api) {
         this.plugin = plugin;
-        this.query = query;
+        this.api = api;
     }
 
     /**
      * Handles a TeamSpeak user joining the server
-     * @param clientInfo The client information from TeamSpeak
+     * @param client The client information from TeamSpeak
      */
-    public void handleUserJoin(Map<String, Object> clientInfo) {
-        String uid = (String) clientInfo.get("client_unique_identifier");
-        String username = (String) clientInfo.get("client_nickname");
-        String[] serverGroups = ((String) clientInfo.get("client_servergroups")).split(",");
+    public void handleUserJoin(Client client) {
+        String uid = client.getUniqueIdentifier();
+        String username = client.getNickname();
+        String[] serverGroups = api.getServerGroupsByClientId(client.getId()).stream()
+            .map(group -> String.valueOf(group.getId()))
+            .toArray(String[]::new);
 
         // Update the user in the cache
         TeamSpeakUser user = new TeamSpeakUser(uid, username, true, serverGroups);

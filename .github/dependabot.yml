@@ -1,0 +1,15 @@
+version: 2
+updates:
+  # Maven-Abhängigkeiten überwachen
+  - package-ecosystem: "maven"
+    directory: "/minecraft-plugin"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "maven"
+    commit-message:
+      prefix: "chore"
+      include: "scope"

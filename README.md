@@ -24,8 +24,9 @@ This project provides integration between Minecraft and TeamSpeak 3 servers, all
 ```
 .
 ├── .github/
-│   └── workflows/
-│       └── build.yml
+│   ├── workflows/
+│   │   └── build.yml
+│   └── dependabot.yml
 ├── docker-compose.yml
 ├── Dockerfile.build
 ├── build.sh
@@ -216,3 +217,18 @@ database:
 - [ ] Secure database credentials
 - [ ] Implement proper error handling
 - [ ] Add logging system 
+
+## Automated Dependency Updates
+
+This project uses GitHub Dependabot to automatically create pull requests for dependency updates:
+
+- **Weekly Checks**: Dependabot checks for updates every Monday
+- **Maven Dependencies**: Automatically monitors and updates Maven dependencies
+- **Safety Measures**: Major version updates for critical dependencies (Bukkit, Paper API, TeamSpeak API) are ignored to prevent breaking changes
+- **Pull Request Labels**: All dependency updates are labeled with "dependencies" and "maven"
+
+To enable Dependabot for your fork:
+1. Go to your repository settings
+2. Navigate to "Code security and analysis"
+3. Enable "Dependabot"
+4. Update the `dependabot.yml` file with your GitHub username 

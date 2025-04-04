@@ -1,18 +1,24 @@
 package com.example.teamspeak.teamspeak;
 
 import com.example.teamspeak.TeamSpeakIntegration;
-import com.github.theholydevil.teamspeak.TeamspeakQuery;
-import com.github.theholydevil.teamspeak.TeamspeakQueryException;
+import com.github.theholywaffle.teamspeak3.TS3Api;
+import com.github.theholywaffle.teamspeak3.TS3Config;
+import com.github.theholywaffle.teamspeak3.TS3Query;
+import com.github.theholywaffle.teamspeak3.api.ClientProperty;
+import com.github.theholywaffle.teamspeak3.api.wrapper.Client;
+import com.github.theholywaffle.teamspeak3.api.wrapper.ServerGroup;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.List;
 
 public class TeamSpeakManager {
     private final TeamSpeakIntegration plugin;
-    private TeamspeakQuery query;
+    private TS3Query query;
+    private TS3Api api;
     private final AtomicBoolean isConnected = new AtomicBoolean(false);
     private BukkitTask updateTask;
     private final Map<String, TeamSpeakUser> userCache = new ConcurrentHashMap<>();
@@ -23,23 +29,34 @@ public class TeamSpeakManager {
 
     public void connect() {
         try {
-            query = new TeamspeakQuery(
-                plugin.getConfigManager().getTeamSpeakHost(),
-                plugin.getConfigManager().getTeamSpeakPort()
-            );
+            // Create a new TS3Config
+            final TS3Config config = new TS3Config();
+            config.setHost(plugin.getConfigManager().getTeamSpeakHost());
+            config.setQueryPort(plugin.getConfigManager().getTeamSpeakPort());
+            config.setFloodRate(TS3Query.FloodRate.UNLIMITED);
+
+            // Create a new TS3Query
+            query = new TS3Query(config);
+            query.connect();
+
+            // Get the API
+            api = query.getApi();
             
-            query.login(
+            // Login with server query credentials
+            api.login(
                 plugin.getConfigManager().getTeamSpeakUsername(),
                 plugin.getConfigManager().getTeamSpeakPassword()
             );
             
-            query.useServer(plugin.getConfigManager().getTeamSpeakVirtualServerId());
+            // Select the virtual server
+            api.selectVirtualServerById(plugin.getConfigManager().getTeamSpeakVirtualServerId());
+            
             isConnected.set(true);
             plugin.getLogger().info("Successfully connected to TeamSpeak server!");
             
             // Initial user list update
             updateUserList();
-        } catch (TeamspeakQueryException e) {
+        } catch (Exception e) {
             plugin.getLogger().severe("Failed to connect to TeamSpeak server: " + e.getMessage());
             isConnected.set(false);
         }
@@ -47,11 +64,7 @@ public class TeamSpeakManager {
 
     public void disconnect() {
         if (query != null) {
-            try {
-                query.logout();
-            } catch (TeamspeakQueryException e) {
-                plugin.getLogger().warning("Error during TeamSpeak logout: " + e.getMessage());
-            }
+            query.exit();
         }
         isConnected.set(false);
     }
@@ -71,37 +84,35 @@ public class TeamSpeakManager {
         }
 
         try {
-            Map<String, Object>[] clients = query.getClients();
-            for (Map<String, Object> client : clients) {
-                String uid = (String) client.get("client_unique_identifier");
-                String username = (String) client.get("client_nickname");
+            List<Client> clients = api.getClients();
+            for (Client client : clients) {
+                String uid = client.getUniqueIdentifier();
+                String username = client.getNickname();
                 boolean isOnline = true;
-                String[] serverGroups = ((String) client.get("client_servergroups")).split(",");
+                List<ServerGroup> serverGroups = api.getServerGroupsByClientId(client.getId());
+                String[] groupIds = serverGroups.stream()
+                    .map(group -> String.valueOf(group.getId()))
+                    .toArray(String[]::new);
 
                 // Update cache
-                TeamSpeakUser user = new TeamSpeakUser(uid, username, isOnline, serverGroups);
+                TeamSpeakUser user = new TeamSpeakUser(uid, username, isOnline, groupIds);
                 userCache.put(uid, user);
 
                 // Update database
-                plugin.getDatabaseManager().updateTeamSpeakUser(uid, username, isOnline, serverGroups);
+                plugin.getDatabaseManager().updateTeamSpeakUser(uid, username, isOnline, groupIds);
             }
 
             // Mark users not in the list as offline
             userCache.forEach((uid, user) -> {
-                boolean found = false;
-                for (Map<String, Object> client : clients) {
-                    if (uid.equals(client.get("client_unique_identifier"))) {
-                        found = true;
-                        break;
-                    }
-                }
+                boolean found = clients.stream()
+                    .anyMatch(client -> uid.equals(client.getUniqueIdentifier()));
                 if (!found) {
                     user.setOnline(false);
                     plugin.getDatabaseManager().updateTeamSpeakUser(uid, user.getUsername(), false, user.getServerGroups());
                 }
             });
 
-        } catch (TeamspeakQueryException e) {
+        } catch (Exception e) {
             plugin.getLogger().severe("Error updating TeamSpeak user list: " + e.getMessage());
             isConnected.set(false);
             // Attempt to reconnect
@@ -117,7 +128,26 @@ public class TeamSpeakManager {
         return userCache;
     }
 
-    public TeamspeakQuery getQuery() {
-        return query;
+    public TS3Api getApi() {
+        return api;
+    }
+
+    public void addPlayerToGroup(String uid, int groupId) {
+        if (!isConnected.get()) {
+            return;
+        }
+
+        try {
+            Client client = api.getClients().stream()
+                .filter(c -> c.getUniqueIdentifier().equals(uid))
+                .findFirst()
+                .orElse(null);
+                
+            if (client != null) {
+                api.addClientToServerGroup(groupId, client.getDatabaseId());
+            }
+        } catch (Exception e) {
+            plugin.getLogger().severe("Error adding player to TeamSpeak group: " + e.getMessage());
+        }
     }
 } 
