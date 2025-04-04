@@ -14,8 +14,8 @@ This project provides integration between Minecraft and TeamSpeak 3 servers, all
 
 ## Prerequisites
 
-- Java 17 or higher
-- Docker and Docker Compose (optional, for PostgreSQL setup)
+- Java 17 or higher (for local development)
+- Docker and Docker Compose (for PostgreSQL setup and Docker-based builds)
 - TeamSpeak 3 Server
 - PostgreSQL Database (optional, SQLite is available as an alternative)
 
@@ -27,6 +27,9 @@ This project provides integration between Minecraft and TeamSpeak 3 servers, all
 │   └── workflows/
 │       └── build.yml
 ├── docker-compose.yml
+├── Dockerfile.build
+├── build.sh
+├── build.bat
 ├── minecraft-plugin/
 │   ├── src/
 │   ├── pom.xml
@@ -51,7 +54,7 @@ This project provides integration between Minecraft and TeamSpeak 3 servers, all
 
 ## Building the Plugin
 
-### Manual Build
+### Option 1: Manual Build (requires Maven)
 
 To build the plugin manually:
 
@@ -62,7 +65,27 @@ mvn clean package
 
 The compiled JAR file will be available in the `target` directory.
 
-### Automated Build with GitHub Actions
+### Option 2: Docker-based Build (no Maven required)
+
+If you don't have Maven installed, you can build the plugin using Docker:
+
+#### On Linux/macOS:
+```bash
+chmod +x build.sh
+./build.sh
+```
+
+#### On Windows:
+```batch
+build.bat
+```
+
+The script will:
+1. Build the plugin inside a Docker container
+2. Extract the JAR file from the container
+3. Save it as `teamspeak-integration.jar` in the current directory
+
+### Option 3: Automated Build with GitHub Actions
 
 This project uses GitHub Actions to automatically build the plugin on every push to the main branch and on pull requests. The workflow:
 
@@ -182,7 +205,7 @@ database:
 
 ### 9. Deployment
 - [x] Create Docker Compose configuration
-- [ ] Set up CI/CD pipeline
+- [x] Set up CI/CD pipeline
 - [ ] Create backup strategy
 - [ ] Create update mechanism
 - [ ] Create monitoring system

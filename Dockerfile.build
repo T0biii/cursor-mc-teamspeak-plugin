@@ -1,0 +1,20 @@
+FROM maven:3.9.6-eclipse-temurin-17 AS build
+
+WORKDIR /app
+
+# Kopiere die Projektdateien
+COPY . .
+
+# Baue das Plugin
+RUN mvn clean package -f minecraft-plugin/pom.xml
+
+# Zweite Stufe: Extrahiere nur die JAR-Datei
+FROM alpine:latest
+
+WORKDIR /output
+
+# Kopiere die gebaute JAR-Datei aus der Build-Stufe
+COPY --from=build /app/minecraft-plugin/target/teamspeak-integration-*.jar ./teamspeak-integration.jar
+
+# Setze den Standardbefehl
+CMD ["echo", "Build abgeschlossen. Die JAR-Datei befindet sich im /output Verzeichnis."] 
