@@ -45,7 +45,7 @@ public class TeamSpeakAdminCommand implements CommandExecutor {
     }
 
     private void sendHelp(CommandSender sender) {
-        String prefix = ChatColor.DARK_GRAY + "[" + ChatColor.AQUA + "TS" + ChatColor.DARK_GRAY + "] " + ChatColor.RESET;
+        String prefix = getPrefix();
         sender.sendMessage(prefix + ChatColor.YELLOW + "TeamSpeak Admin Commands:");
         sender.sendMessage(prefix + ChatColor.GRAY + "/tsadmin reload " + ChatColor.WHITE + "- Reload the plugin configuration");
         sender.sendMessage(prefix + ChatColor.GRAY + "/tsadmin update " + ChatColor.WHITE + "- Force update TeamSpeak user list");
@@ -102,6 +102,6 @@ public class TeamSpeakAdminCommand implements CommandExecutor {
     }
 
     private String getPrefix() {
-        return ChatColor.DARK_GRAY + "[" + ChatColor.AQUA + "TS" + ChatColor.DARK_GRAY + "] " + ChatColor.RESET;
+        return plugin.getConfigManager().getMessagePrefix();
     }
 } 

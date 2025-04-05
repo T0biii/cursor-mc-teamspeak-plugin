@@ -1,6 +1,7 @@
 package com.example.teamspeak.config;
 
 import com.example.teamspeak.TeamSpeakIntegration;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 
 public class ConfigManager {
@@ -104,7 +105,18 @@ public class ConfigManager {
 
     // Messages
     public String getMessagePrefix() {
-        return config.getString("messages.prefix", "&8[&bTS&8] &r");
+        String rawPrefix = config.getString("messages.prefix", "&8[&bTS&8] &r");
+        return translateColors(rawPrefix);
+    }
+
+    /**
+     * Übersetzt Farbcodes aus der Config (z.B. &8) in Minecraft-Farbcodes
+     * @param text Der Text mit Farbcodes
+     * @return Der Text mit übersetzten Farbcodes
+     */
+    public String translateColors(String text) {
+        if (text == null) return "";
+        return ChatColor.translateAlternateColorCodes('&', text);
     }
 
     public String getMessage(String key) {
