@@ -1,16 +1,25 @@
 package com.example.teamspeak.config;
 
 import com.example.teamspeak.TeamSpeakIntegration;
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.configuration.file.FileConfiguration;
 
 public class ConfigManager {
     private final TeamSpeakIntegration plugin;
     private FileConfiguration config;
+    private final MiniMessage miniMessage;
+    private final LegacyComponentSerializer legacySerializer;
 
     public ConfigManager(TeamSpeakIntegration plugin) {
         this.plugin = plugin;
         this.config = plugin.getConfig();
+        this.miniMessage = MiniMessage.miniMessage();
+        this.legacySerializer = LegacyComponentSerializer.builder()
+            .character('&')
+            .hexColors()
+            .build();
     }
 
     public void reloadConfig() {
@@ -104,22 +113,26 @@ public class ConfigManager {
     }
 
     // Messages
-    public String getMessagePrefix() {
-        String rawPrefix = config.getString("messages.prefix", "&8[&bTS&8] &r");
-        return translateColors(rawPrefix);
+    public Component getMessagePrefix() {
+        String rawPrefix = config.getString("messages.prefix", "<dark_gray>[<aqua>TS</aqua>]</dark_gray> ");
+        return miniMessage.deserialize(rawPrefix);
     }
 
     /**
-     * Übersetzt Farbcodes aus der Config (z.B. &8) in Minecraft-Farbcodes
-     * @param text Der Text mit Farbcodes
-     * @return Der Text mit übersetzten Farbcodes
+     * Konvertiert Legacy-Farbcodes in Adventure Components
+     * @param text Der Text mit Legacy-Farbcodes
+     * @return Der Text als Adventure Component
      */
-    public String translateColors(String text) {
-        if (text == null) return "";
-        return ChatColor.translateAlternateColorCodes('&', text);
+    public Component translateColors(String text) {
+        if (text == null) return Component.empty();
+        // Erst Legacy-Farbcodes übersetzen
+        String legacyText = legacySerializer.serialize(legacySerializer.deserialize(text));
+        // Dann in MiniMessage Format konvertieren
+        return miniMessage.deserialize(legacyText);
     }
 
-    public String getMessage(String key) {
-        return config.getString("messages." + key, "Message not found: " + key);
+    public Component getMessage(String key) {
+        String rawMessage = config.getString("messages." + key, "Message not found: " + key);
+        return translateColors(rawMessage);
     }
 } 
