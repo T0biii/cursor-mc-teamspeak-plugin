@@ -1,6 +1,7 @@
 package com.example.teamspeak.commands;
 
 import com.example.teamspeak.TeamSpeakIntegration;
+import com.example.teamspeak.teamspeak.TeamSpeakUser;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -44,7 +45,7 @@ public class TeamSpeakAdminCommand implements CommandExecutor {
     }
 
     private void sendHelp(CommandSender sender) {
-        String prefix = plugin.getConfigManager().getMessagePrefix();
+        String prefix = ChatColor.DARK_GRAY + "[" + ChatColor.AQUA + "TS" + ChatColor.DARK_GRAY + "] " + ChatColor.RESET;
         sender.sendMessage(prefix + ChatColor.YELLOW + "TeamSpeak Admin Commands:");
         sender.sendMessage(prefix + ChatColor.GRAY + "/tsadmin reload " + ChatColor.WHITE + "- Reload the plugin configuration");
         sender.sendMessage(prefix + ChatColor.GRAY + "/tsadmin update " + ChatColor.WHITE + "- Force update TeamSpeak user list");
@@ -53,24 +54,21 @@ public class TeamSpeakAdminCommand implements CommandExecutor {
 
     private void handleReload(CommandSender sender) {
         plugin.getConfigManager().reloadConfig();
-        sender.sendMessage(plugin.getConfigManager().getMessagePrefix() + 
-            ChatColor.GREEN + "Configuration reloaded!");
+        sender.sendMessage(getPrefix() + ChatColor.GREEN + "Configuration reloaded!");
     }
 
     private void handleUpdate(CommandSender sender) {
         if (!plugin.getTeamSpeakManager().isConnected()) {
-            sender.sendMessage(plugin.getConfigManager().getMessagePrefix() + 
-                ChatColor.RED + "TeamSpeak server is not connected!");
+            sender.sendMessage(getPrefix() + ChatColor.RED + "TeamSpeak server is not connected!");
             return;
         }
 
         plugin.getTeamSpeakManager().startUpdateTask();
-        sender.sendMessage(plugin.getConfigManager().getMessagePrefix() + 
-            ChatColor.GREEN + "TeamSpeak user list update triggered!");
+        sender.sendMessage(getPrefix() + ChatColor.GREEN + "TeamSpeak user list update triggered!");
     }
 
     private void handleStatus(CommandSender sender) {
-        String prefix = plugin.getConfigManager().getMessagePrefix();
+        String prefix = getPrefix();
         sender.sendMessage(prefix + ChatColor.YELLOW + "TeamSpeak Integration Status:");
         
         // Connection status
@@ -80,10 +78,9 @@ public class TeamSpeakAdminCommand implements CommandExecutor {
         
         // User count
         int onlineUsers = (int) plugin.getTeamSpeakManager().getUserCache().values().stream()
-            .filter(user -> user.isOnline())
+            .filter(TeamSpeakUser::isOnline)
             .count();
-        sender.sendMessage(prefix + ChatColor.GRAY + "Online Users: " + 
-            ChatColor.WHITE + onlineUsers);
+        sender.sendMessage(prefix + ChatColor.GRAY + "Online Users: " + ChatColor.YELLOW + onlineUsers);
         
         // Database status
         try {
@@ -94,5 +91,17 @@ public class TeamSpeakAdminCommand implements CommandExecutor {
             sender.sendMessage(prefix + ChatColor.GRAY + "Database Connection: " + 
                 ChatColor.RED + "Error");
         }
+
+        // Show online users
+        if (isConnected && onlineUsers > 0) {
+            sender.sendMessage(prefix + ChatColor.YELLOW + "Online TeamSpeak Users:");
+            plugin.getTeamSpeakManager().getUserCache().values().stream()
+                .filter(TeamSpeakUser::isOnline)
+                .forEach(user -> sender.sendMessage(prefix + ChatColor.GRAY + "• " + ChatColor.WHITE + user.getUsername()));
+        }
+    }
+
+    private String getPrefix() {
+        return ChatColor.DARK_GRAY + "[" + ChatColor.AQUA + "TS" + ChatColor.DARK_GRAY + "] " + ChatColor.RESET;
     }
 } 
