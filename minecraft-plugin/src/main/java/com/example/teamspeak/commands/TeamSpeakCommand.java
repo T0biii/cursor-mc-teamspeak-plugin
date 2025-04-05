@@ -2,11 +2,12 @@ package com.example.teamspeak.commands;
 
 import com.example.teamspeak.TeamSpeakIntegration;
 import com.example.teamspeak.teamspeak.TeamSpeakUser;
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 
 import java.util.UUID;
 
@@ -20,7 +21,7 @@ public class TeamSpeakCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage(ChatColor.RED + "This command can only be used by players!");
+            sender.sendMessage(Component.text("This command can only be used by players!", NamedTextColor.RED));
             return true;
         }
 
@@ -34,14 +35,14 @@ public class TeamSpeakCommand implements CommandExecutor {
         switch (args[0].toLowerCase()) {
             case "link":
                 if (!player.hasPermission("teamspeak.link")) {
-                    player.sendMessage(ChatColor.RED + "You don't have permission to use this command!");
+                    player.sendMessage(Component.text("You don't have permission to use this command!", NamedTextColor.RED));
                     return true;
                 }
                 handleLink(player);
                 break;
             case "unlink":
                 if (!player.hasPermission("teamspeak.unlink")) {
-                    player.sendMessage(ChatColor.RED + "You don't have permission to use this command!");
+                    player.sendMessage(Component.text("You don't have permission to use this command!", NamedTextColor.RED));
                     return true;
                 }
                 handleUnlink(player);
@@ -53,7 +54,7 @@ public class TeamSpeakCommand implements CommandExecutor {
                 sendHelp(player);
                 break;
             default:
-                player.sendMessage(ChatColor.RED + "Unknown subcommand. Use /ts help for help.");
+                player.sendMessage(Component.text("Unknown subcommand. Use /ts help for help.", NamedTextColor.RED));
                 break;
         }
 
@@ -61,58 +62,61 @@ public class TeamSpeakCommand implements CommandExecutor {
     }
 
     private void sendHelp(Player player) {
-        String prefix = plugin.getConfigManager().getMessagePrefix();
-        player.sendMessage(prefix + ChatColor.YELLOW + "TeamSpeak Commands:");
-        player.sendMessage(prefix + ChatColor.GRAY + "/ts link " + ChatColor.WHITE + "- Link your Minecraft account with TeamSpeak");
-        player.sendMessage(prefix + ChatColor.GRAY + "/ts unlink " + ChatColor.WHITE + "- Unlink your Minecraft account from TeamSpeak");
-        player.sendMessage(prefix + ChatColor.GRAY + "/ts list " + ChatColor.WHITE + "- Show online TeamSpeak users");
-        player.sendMessage(prefix + ChatColor.GRAY + "/ts help " + ChatColor.WHITE + "- Show this help message");
+        Component prefix = plugin.getConfigManager().getMessagePrefix();
+        player.sendMessage(prefix.append(Component.text("TeamSpeak Commands:", NamedTextColor.YELLOW)));
+        player.sendMessage(prefix.append(Component.text("/ts link", NamedTextColor.GRAY))
+            .append(Component.text(" - Link your Minecraft account with TeamSpeak", NamedTextColor.WHITE)));
+        player.sendMessage(prefix.append(Component.text("/ts unlink", NamedTextColor.GRAY))
+            .append(Component.text(" - Unlink your Minecraft account from TeamSpeak", NamedTextColor.WHITE)));
+        player.sendMessage(prefix.append(Component.text("/ts list", NamedTextColor.GRAY))
+            .append(Component.text(" - Show online TeamSpeak users", NamedTextColor.WHITE)));
+        player.sendMessage(prefix.append(Component.text("/ts help", NamedTextColor.GRAY))
+            .append(Component.text(" - Show this help message", NamedTextColor.WHITE)));
     }
 
     private void handleLink(Player player) {
         plugin.getDatabaseManager().isAccountLinked(player.getUniqueId()).thenAccept(isLinked -> {
             if (isLinked) {
-                player.sendMessage(plugin.getConfigManager().getMessagePrefix() + 
-                    plugin.getConfigManager().getMessage("already_linked"));
+                player.sendMessage(plugin.getConfigManager().getMessagePrefix()
+                    .append(plugin.getConfigManager().getMessage("already_linked")));
                 return;
             }
 
-            // Generate a random verification code
             String verificationCode = generateVerificationCode();
             
-            // TODO: Implement verification code storage and TeamSpeak message sending
-            player.sendMessage(plugin.getConfigManager().getMessagePrefix() + 
-                ChatColor.YELLOW + "Please connect to TeamSpeak and type the following code in chat: " + 
-                ChatColor.GREEN + verificationCode);
+            player.sendMessage(plugin.getConfigManager().getMessagePrefix()
+                .append(Component.text("Please connect to TeamSpeak and type the following code in chat: ", NamedTextColor.YELLOW))
+                .append(Component.text(verificationCode, NamedTextColor.GREEN)));
         });
     }
 
     private void handleUnlink(Player player) {
         plugin.getDatabaseManager().unlinkAccount(player.getUniqueId()).thenAccept(success -> {
             if (success) {
-                player.sendMessage(plugin.getConfigManager().getMessagePrefix() + 
-                    plugin.getConfigManager().getMessage("unlink_success"));
+                player.sendMessage(plugin.getConfigManager().getMessagePrefix()
+                    .append(plugin.getConfigManager().getMessage("unlink_success")));
             } else {
-                player.sendMessage(plugin.getConfigManager().getMessagePrefix() + 
-                    plugin.getConfigManager().getMessage("not_linked"));
+                player.sendMessage(plugin.getConfigManager().getMessagePrefix()
+                    .append(plugin.getConfigManager().getMessage("not_linked")));
             }
         });
     }
 
     private void handleList(Player player) {
         if (!plugin.getTeamSpeakManager().isConnected()) {
-            player.sendMessage(plugin.getConfigManager().getMessagePrefix() + 
-                ChatColor.RED + "TeamSpeak server is currently not connected!");
+            player.sendMessage(plugin.getConfigManager().getMessagePrefix()
+                .append(Component.text("TeamSpeak server is currently not connected!", NamedTextColor.RED)));
             return;
         }
 
-        player.sendMessage(plugin.getConfigManager().getMessagePrefix() + 
-            ChatColor.YELLOW + "Online TeamSpeak Users:");
+        player.sendMessage(plugin.getConfigManager().getMessagePrefix()
+            .append(Component.text("Online TeamSpeak Users:", NamedTextColor.YELLOW)));
         
         plugin.getTeamSpeakManager().getUserCache().values().stream()
             .filter(TeamSpeakUser::isOnline)
-            .forEach(user -> player.sendMessage(plugin.getConfigManager().getMessagePrefix() + 
-                ChatColor.GRAY + "• " + ChatColor.WHITE + user.getUsername()));
+            .forEach(user -> player.sendMessage(plugin.getConfigManager().getMessagePrefix()
+                .append(Component.text("• ", NamedTextColor.GRAY))
+                .append(Component.text(user.getUsername(), NamedTextColor.WHITE))));
     }
 
     private String generateVerificationCode() {
