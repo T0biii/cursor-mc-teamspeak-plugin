@@ -6,6 +6,7 @@ import com.example.teamspeak.teamspeak.TeamSpeakManager;
 import com.example.teamspeak.commands.TeamSpeakCommand;
 import com.example.teamspeak.commands.TeamSpeakAdminCommand;
 import com.example.teamspeak.commands.TeamSpeakAdminTabCompleter;
+import com.example.teamspeak.update.UpdateChecker;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class TeamSpeakIntegration extends JavaPlugin {
@@ -13,6 +14,7 @@ public class TeamSpeakIntegration extends JavaPlugin {
     private ConfigManager configManager;
     private DatabaseManager databaseManager;
     private TeamSpeakManager teamSpeakManager;
+    private UpdateChecker updateChecker;
 
     @Override
     public void onEnable() {
@@ -25,6 +27,10 @@ public class TeamSpeakIntegration extends JavaPlugin {
         this.configManager = new ConfigManager(this);
         this.databaseManager = new DatabaseManager(this);
         this.teamSpeakManager = new TeamSpeakManager(this);
+        
+        // Initialize update checker
+        this.updateChecker = new UpdateChecker(this, "T0biii/cursor-mc-teamspeak-plugin");
+        this.updateChecker.checkForUpdates();
         
         // Register commands
         getCommand("ts").setExecutor(new TeamSpeakCommand(this));
