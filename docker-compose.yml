@@ -11,7 +11,7 @@ services:
       VERSION: "1.21.4"
       MEMORY: "2G"
       OVERRIDE_SERVER_PROPERTIES: "true"
-      ONLINE_MODE: "false"
+      ONLINE_MODE: "true"
       ENABLE_RCON: "true"
       RCON_PASSWORD: "minecraft"
       RCON_PORT: "25575"
