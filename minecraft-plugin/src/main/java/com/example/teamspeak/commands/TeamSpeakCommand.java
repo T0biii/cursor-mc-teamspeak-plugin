@@ -5,17 +5,46 @@ import com.example.teamspeak.teamspeak.TeamSpeakUser;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.util.StringUtil;
 
-import java.util.UUID;
+import java.util.*;
 
-public class TeamSpeakCommand implements CommandExecutor {
+public class TeamSpeakCommand implements CommandExecutor, TabCompleter {
     private final TeamSpeakIntegration plugin;
+    private static final List<String> COMMANDS = Arrays.asList("link", "unlink", "list", "help");
 
     public TeamSpeakCommand(TeamSpeakIntegration plugin) {
         this.plugin = plugin;
+    }
+
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        List<String> completions = new ArrayList<>();
+        
+        // Nur Vorschläge anzeigen, wenn der Sender die Berechtigung hat
+        if (!(sender instanceof Player)) {
+            return completions;
+        }
+
+        Player player = (Player) sender;
+
+        if (args.length == 1) {
+            // Zeige nur die Befehle an, für die der Spieler eine Berechtigung hat
+            List<String> availableCommands = new ArrayList<>();
+            if (player.hasPermission("teamspeak.link")) availableCommands.add("link");
+            if (player.hasPermission("teamspeak.unlink")) availableCommands.add("unlink");
+            availableCommands.add("list");
+            availableCommands.add("help");
+
+            StringUtil.copyPartialMatches(args[0], availableCommands, completions);
+        }
+
+        Collections.sort(completions); // Alphabetisch sortieren
+        return completions;
     }
 
     @Override
@@ -64,14 +93,34 @@ public class TeamSpeakCommand implements CommandExecutor {
     private void sendHelp(Player player) {
         Component prefix = plugin.getConfigManager().getMessagePrefix();
         player.sendMessage(prefix.append(Component.text("TeamSpeak Commands:", NamedTextColor.YELLOW)));
-        player.sendMessage(prefix.append(Component.text("/ts link", NamedTextColor.GRAY))
-            .append(Component.text(" - Link your Minecraft account with TeamSpeak", NamedTextColor.WHITE)));
-        player.sendMessage(prefix.append(Component.text("/ts unlink", NamedTextColor.GRAY))
-            .append(Component.text(" - Unlink your Minecraft account from TeamSpeak", NamedTextColor.WHITE)));
-        player.sendMessage(prefix.append(Component.text("/ts list", NamedTextColor.GRAY))
-            .append(Component.text(" - Show online TeamSpeak users", NamedTextColor.WHITE)));
-        player.sendMessage(prefix.append(Component.text("/ts help", NamedTextColor.GRAY))
-            .append(Component.text(" - Show this help message", NamedTextColor.WHITE)));
+        
+        // Link Command
+        player.sendMessage(prefix.append(
+            Component.text("/ts link", NamedTextColor.GRAY)
+                .hoverEvent(Component.text("Click to link your Minecraft account with TeamSpeak", NamedTextColor.WHITE))
+                .clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand("/ts link"))
+            ).append(Component.text(" - Link your Minecraft account with TeamSpeak", NamedTextColor.WHITE)));
+
+        // Unlink Command
+        player.sendMessage(prefix.append(
+            Component.text("/ts unlink", NamedTextColor.GRAY)
+                .hoverEvent(Component.text("Click to unlink your Minecraft account from TeamSpeak", NamedTextColor.WHITE))
+                .clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand("/ts unlink"))
+            ).append(Component.text(" - Unlink your Minecraft account from TeamSpeak", NamedTextColor.WHITE)));
+
+        // List Command
+        player.sendMessage(prefix.append(
+            Component.text("/ts list", NamedTextColor.GRAY)
+                .hoverEvent(Component.text("Click to show online TeamSpeak users", NamedTextColor.WHITE))
+                .clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand("/ts list"))
+            ).append(Component.text(" - Show online TeamSpeak users", NamedTextColor.WHITE)));
+
+        // Help Command
+        player.sendMessage(prefix.append(
+            Component.text("/ts help", NamedTextColor.GRAY)
+                .hoverEvent(Component.text("Click to show this help message", NamedTextColor.WHITE))
+                .clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand("/ts help"))
+            ).append(Component.text(" - Show this help message", NamedTextColor.WHITE)));
     }
 
     private void handleLink(Player player) {
