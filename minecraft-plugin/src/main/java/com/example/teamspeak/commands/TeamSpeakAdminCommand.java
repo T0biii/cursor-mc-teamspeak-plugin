@@ -11,7 +11,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 public class TeamSpeakAdminCommand implements CommandExecutor {
     private final TeamSpeakIntegration plugin;
