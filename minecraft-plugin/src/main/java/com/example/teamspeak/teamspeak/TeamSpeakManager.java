@@ -48,8 +48,8 @@ public class TeamSpeakManager {
                 plugin.getConfigManager().getTeamSpeakPassword()
             );
             
-            // Select the virtual server
-            api.selectVirtualServerById(plugin.getConfigManager().getTeamSpeakVirtualServerId());
+            // Select the virtual server by port
+            api.selectVirtualServerByPort(plugin.getConfigManager().getTeamSpeakVirtualServerPort());
             
             isConnected.set(true);
             plugin.getLogger().info("Successfully connected to TeamSpeak server!");

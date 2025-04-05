@@ -6,7 +6,7 @@ teamspeak:
   port: 10011
   username: "serverquery"
   password: "your_query_password"
-  virtual_server_id: 1
+  virtual_server_port: 9987  # Port des virtuellen Servers (Standard: 9987)
   update_interval: 30  # seconds
 
 # Database Settings

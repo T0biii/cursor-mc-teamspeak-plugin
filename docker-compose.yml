@@ -8,7 +8,7 @@ services:
     environment:
       EULA: "TRUE"
       TYPE: "PAPER"
-      VERSION: "1.20.4"
+      VERSION: "1.21.4"
       MEMORY: "2G"
       OVERRIDE_SERVER_PROPERTIES: "true"
       ONLINE_MODE: "false"
@@ -17,7 +17,7 @@ services:
       RCON_PORT: "25575"
     volumes:
       - ./minecraft-data:/data
-      - ./minecraft-plugin/target/TeamSpeakIntegration.jar:/data/plugins/TeamSpeakIntegration.jar
+      - ./minecraft-plugin/target/teamspeak-integration.jar:/data/plugins/teamspeak-integration.jar
     depends_on:
       - postgres
 
@@ -35,4 +35,3 @@ services:
 
 volumes:
   postgres-data:
-  minecraft-data: 

@@ -34,8 +34,8 @@ public class ConfigManager {
         return config.getString("teamspeak.password", "");
     }
 
-    public int getTeamSpeakVirtualServerId() {
-        return config.getInt("teamspeak.virtual_server_id", 1);
+    public int getTeamSpeakVirtualServerPort() {
+        return config.getInt("teamspeak.virtual_server_port", 9987);
     }
 
     public int getTeamSpeakUpdateInterval() {
