@@ -4,9 +4,14 @@ import com.example.teamspeak.TeamSpeakIntegration;
 import com.example.teamspeak.teamspeak.TeamSpeakUser;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public class TeamSpeakAdminCommand implements CommandExecutor {
     private final TeamSpeakIntegration plugin;
@@ -36,6 +41,23 @@ public class TeamSpeakAdminCommand implements CommandExecutor {
                 break;
             case "status":
                 handleStatus(sender);
+                break;
+            case "unlink":
+                if (args.length < 2) {
+                    sender.sendMessage(Component.text("Usage: /tsadmin unlink <player>", NamedTextColor.RED));
+                    return true;
+                }
+                handleUnlink(sender, args[1]);
+                break;
+            case "list":
+                handleList(sender);
+                break;
+            case "verify":
+                if (args.length < 2) {
+                    sender.sendMessage(Component.text("Usage: /tsadmin verify <player>", NamedTextColor.RED));
+                    return true;
+                }
+                handleVerify(sender, args[1]);
                 break;
             default:
                 sender.sendMessage(Component.text("Unknown subcommand. Use /tsadmin help for help.", NamedTextColor.RED));
@@ -69,6 +91,27 @@ public class TeamSpeakAdminCommand implements CommandExecutor {
                 .hoverEvent(Component.text("Click to show plugin status"))
                 .clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand("/tsadmin status"))
             ).append(Component.text(" - Show plugin status", NamedTextColor.WHITE)));
+
+        // Unlink command
+        sender.sendMessage(prefix.append(
+            Component.text("/tsadmin unlink <player>", NamedTextColor.GRAY)
+                .hoverEvent(Component.text("Click to unlink a player's TeamSpeak account"))
+                .clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand("/tsadmin unlink"))
+            ).append(Component.text(" - Unlink a player's TeamSpeak account", NamedTextColor.WHITE)));
+
+        // List command
+        sender.sendMessage(prefix.append(
+            Component.text("/tsadmin list", NamedTextColor.GRAY)
+                .hoverEvent(Component.text("Click to show all linked accounts"))
+                .clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand("/tsadmin list"))
+            ).append(Component.text(" - Show all linked accounts", NamedTextColor.WHITE)));
+
+        // Verify command
+        sender.sendMessage(prefix.append(
+            Component.text("/tsadmin verify <player>", NamedTextColor.GRAY)
+                .hoverEvent(Component.text("Click to manually verify a player's account"))
+                .clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand("/tsadmin verify"))
+            ).append(Component.text(" - Manually verify a player's account", NamedTextColor.WHITE)));
     }
 
     private void handleReload(CommandSender sender) {
@@ -137,5 +180,79 @@ public class TeamSpeakAdminCommand implements CommandExecutor {
                     .append(Component.text("• ", NamedTextColor.GRAY))
                     .append(Component.text(user.getUsername(), NamedTextColor.WHITE))));
         }
+    }
+
+    private void handleUnlink(CommandSender sender, String playerName) {
+        Player targetPlayer = Bukkit.getPlayer(playerName);
+        if (targetPlayer == null) {
+            sender.sendMessage(plugin.getConfigManager().getMessagePrefix()
+                .append(Component.text("Player not found: " + playerName, NamedTextColor.RED)));
+            return;
+        }
+
+        plugin.getDatabaseManager().unlinkAccount(targetPlayer.getUniqueId()).thenAccept(success -> {
+            if (success) {
+                sender.sendMessage(plugin.getConfigManager().getMessagePrefix()
+                    .append(Component.text("Successfully unlinked " + playerName + "'s TeamSpeak account!", NamedTextColor.GREEN)));
+                targetPlayer.sendMessage(plugin.getConfigManager().getMessagePrefix()
+                    .append(Component.text("Your TeamSpeak account has been unlinked by an administrator.", NamedTextColor.YELLOW)));
+            } else {
+                sender.sendMessage(plugin.getConfigManager().getMessagePrefix()
+                    .append(Component.text("Failed to unlink " + playerName + "'s TeamSpeak account. Account might not be linked.", NamedTextColor.RED)));
+            }
+        });
+    }
+
+    private void handleList(CommandSender sender) {
+        Component prefix = plugin.getConfigManager().getMessagePrefix();
+        sender.sendMessage(prefix.append(Component.text("Linked Accounts:", NamedTextColor.YELLOW)));
+
+        plugin.getDatabaseManager().getAllLinkedAccounts().thenAccept(accounts -> {
+            if (accounts.isEmpty()) {
+                sender.sendMessage(prefix.append(Component.text("No accounts are currently linked.", NamedTextColor.GRAY)));
+                return;
+            }
+
+            accounts.forEach(account -> {
+                String playerName = Bukkit.getOfflinePlayer(UUID.fromString(account.getMinecraftUuid())).getName();
+                if (playerName != null) {
+                    sender.sendMessage(prefix
+                        .append(Component.text("• ", NamedTextColor.GRAY))
+                        .append(Component.text(playerName, NamedTextColor.WHITE))
+                        .append(Component.text(" → ", NamedTextColor.GRAY))
+                        .append(Component.text(account.getTeamSpeakUsername(), NamedTextColor.AQUA)));
+                }
+            });
+        });
+    }
+
+    private void handleVerify(CommandSender sender, String playerName) {
+        Player targetPlayer = Bukkit.getPlayer(playerName);
+        if (targetPlayer == null) {
+            sender.sendMessage(plugin.getConfigManager().getMessagePrefix()
+                .append(Component.text("Player not found: " + playerName, NamedTextColor.RED)));
+            return;
+        }
+
+        plugin.getDatabaseManager().isAccountLinked(targetPlayer.getUniqueId()).thenAccept(isLinked -> {
+            if (!isLinked) {
+                sender.sendMessage(plugin.getConfigManager().getMessagePrefix()
+                    .append(Component.text("Player " + playerName + " does not have a linked TeamSpeak account.", NamedTextColor.RED)));
+                return;
+            }
+
+            // Generate a new verification code
+            String verificationCode = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+            
+            // Send the verification code to both the admin and the player
+            sender.sendMessage(plugin.getConfigManager().getMessagePrefix()
+                .append(Component.text("Verification code for " + playerName + ": ", NamedTextColor.YELLOW))
+                .append(Component.text(verificationCode, NamedTextColor.GREEN)));
+            
+            targetPlayer.sendMessage(plugin.getConfigManager().getMessagePrefix()
+                .append(Component.text("An administrator has initiated account verification. ", NamedTextColor.YELLOW))
+                .append(Component.text("Please enter this code in TeamSpeak: ", NamedTextColor.YELLOW))
+                .append(Component.text(verificationCode, NamedTextColor.GREEN)));
+        });
     }
 } 

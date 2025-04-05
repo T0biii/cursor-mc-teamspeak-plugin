@@ -11,7 +11,7 @@ commands:
     permission: teamspeak.use
   tsadmin:
     description: Admin commands for TeamSpeak integration
-    usage: /<command> [reload|update|status]
+    usage: /<command> [reload|update|status|unlink|list|verify]
     permission: teamspeak.admin
 
 permissions:
@@ -26,4 +26,7 @@ permissions:
     default: true
   teamspeak.unlink:
     description: Allows unlinking Minecraft account from TeamSpeak
-    default: true 
+    default: true
+  teamspeak.verify:
+    description: Allows verifying TeamSpeak accounts
+    default: op 

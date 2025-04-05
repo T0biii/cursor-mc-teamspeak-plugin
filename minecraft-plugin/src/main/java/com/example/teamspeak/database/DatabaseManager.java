@@ -8,6 +8,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -272,5 +274,60 @@ public class DatabaseManager {
                 return false;
             }
         });
+    }
+
+    /**
+     * Gets all linked accounts from the database
+     * @return A CompletableFuture that completes with a list of linked accounts
+     */
+    public CompletableFuture<List<LinkedAccount>> getAllLinkedAccounts() {
+        return CompletableFuture.supplyAsync(() -> {
+            List<LinkedAccount> accounts = new ArrayList<>();
+            String sql = "SELECT minecraft_uuid, teamspeak_uid, teamspeak_username FROM linked_accounts";
+            
+            try (Connection conn = dataSource.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(sql);
+                 ResultSet rs = stmt.executeQuery()) {
+                
+                while (rs.next()) {
+                    accounts.add(new LinkedAccount(
+                        rs.getString("minecraft_uuid"),
+                        rs.getString("teamspeak_uid"),
+                        rs.getString("teamspeak_username")
+                    ));
+                }
+            } catch (SQLException e) {
+                plugin.getLogger().severe("Error getting all linked accounts: " + e.getMessage());
+            }
+            
+            return accounts;
+        });
+    }
+
+    /**
+     * Represents a linked account in the database
+     */
+    public static class LinkedAccount {
+        private final String minecraftUuid;
+        private final String teamspeakUid;
+        private final String teamspeakUsername;
+
+        public LinkedAccount(String minecraftUuid, String teamspeakUid, String teamspeakUsername) {
+            this.minecraftUuid = minecraftUuid;
+            this.teamspeakUid = teamspeakUid;
+            this.teamspeakUsername = teamspeakUsername;
+        }
+
+        public String getMinecraftUuid() {
+            return minecraftUuid;
+        }
+
+        public String getTeamSpeakUid() {
+            return teamspeakUid;
+        }
+
+        public String getTeamSpeakUsername() {
+            return teamspeakUsername;
+        }
     }
 } 
