@@ -29,7 +29,7 @@ jobs:
       run: mvn clean package -f minecraft-plugin/pom.xml
     
     - name: Upload JAR file
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: teamspeak-integration
         path: minecraft-plugin/target/teamspeak-integration-*.jar
