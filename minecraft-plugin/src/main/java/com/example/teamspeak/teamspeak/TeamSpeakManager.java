@@ -14,6 +14,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.List;
+import java.util.HashMap;
+import java.util.stream.Collectors;
+import java.util.Arrays;
 
 public class TeamSpeakManager {
     private final TeamSpeakIntegration plugin;
@@ -84,12 +87,33 @@ public class TeamSpeakManager {
         }
 
         try {
+            // Hole alle Clients auf einmal
             List<Client> clients = api.getClients();
+            
+            // Hole alle Servergruppen auf einmal
+            List<ServerGroup> allServerGroups = api.getServerGroups();
+            
+            // Erstelle eine Map für schnellen Zugriff auf Servergruppen nach Client-ID
+            Map<Integer, List<ServerGroup>> clientGroupsMap = new HashMap<>();
+            
+            // Hole die Servergruppen für alle Clients auf einmal
+            for (Client client : clients) {
+                int clientId = client.getId();
+                int[] clientGroupIds = client.getServerGroups();
+                List<ServerGroup> clientGroups = allServerGroups.stream()
+                    .filter(group -> Arrays.stream(clientGroupIds).anyMatch(id -> id == group.getId()))
+                    .collect(Collectors.toList());
+                clientGroupsMap.put(clientId, clientGroups);
+            }
+            
+            // Verarbeite die Clients
             for (Client client : clients) {
                 String uid = client.getUniqueIdentifier();
                 String username = client.getNickname();
                 boolean isOnline = true;
-                List<ServerGroup> serverGroups = api.getServerGroupsByClientId(client.getId());
+                
+                // Hole die Servergruppen aus der Map
+                List<ServerGroup> serverGroups = clientGroupsMap.get(client.getId());
                 String[] groupIds = serverGroups.stream()
                     .map(group -> String.valueOf(group.getId()))
                     .toArray(String[]::new);
