@@ -4,7 +4,6 @@ import com.example.teamspeak.TeamSpeakIntegration;
 import com.example.teamspeak.teamspeak.TeamSpeakUser;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;

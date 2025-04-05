@@ -15,7 +15,6 @@ import java.util.*;
 
 public class TeamSpeakCommand implements CommandExecutor, TabCompleter {
     private final TeamSpeakIntegration plugin;
-    private static final List<String> COMMANDS = Arrays.asList("link", "unlink", "list", "help");
 
     public TeamSpeakCommand(TeamSpeakIntegration plugin) {
         this.plugin = plugin;

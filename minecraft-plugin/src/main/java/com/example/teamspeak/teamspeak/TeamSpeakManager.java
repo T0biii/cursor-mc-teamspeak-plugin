@@ -4,7 +4,6 @@ import com.example.teamspeak.TeamSpeakIntegration;
 import com.github.theholywaffle.teamspeak3.TS3Api;
 import com.github.theholywaffle.teamspeak3.TS3Config;
 import com.github.theholywaffle.teamspeak3.TS3Query;
-import com.github.theholywaffle.teamspeak3.api.ClientProperty;
 import com.github.theholywaffle.teamspeak3.api.wrapper.Client;
 import com.github.theholywaffle.teamspeak3.api.wrapper.ServerGroup;
 import org.bukkit.Bukkit;
