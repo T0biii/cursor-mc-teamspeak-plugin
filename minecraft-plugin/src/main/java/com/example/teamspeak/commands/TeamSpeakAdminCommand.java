@@ -49,12 +49,27 @@ public class TeamSpeakAdminCommand implements CommandExecutor {
     private void sendHelp(CommandSender sender) {
         Component prefix = plugin.getConfigManager().getMessagePrefix();
         sender.sendMessage(prefix.append(Component.text("TeamSpeak Admin Commands:", NamedTextColor.YELLOW)));
-        sender.sendMessage(prefix.append(Component.text("/tsadmin reload", NamedTextColor.GRAY))
-            .append(Component.text(" - Reload the plugin configuration", NamedTextColor.WHITE)));
-        sender.sendMessage(prefix.append(Component.text("/tsadmin update", NamedTextColor.GRAY))
-            .append(Component.text(" - Force update TeamSpeak user list", NamedTextColor.WHITE)));
-        sender.sendMessage(prefix.append(Component.text("/tsadmin status", NamedTextColor.GRAY))
-            .append(Component.text(" - Show plugin status", NamedTextColor.WHITE)));
+        
+        // Reload command
+        sender.sendMessage(prefix.append(
+            Component.text("/tsadmin reload", NamedTextColor.GRAY)
+                .hoverEvent(Component.text("Click to reload the plugin configuration"))
+                .clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand("/tsadmin reload"))
+            ).append(Component.text(" - Reload the plugin configuration", NamedTextColor.WHITE)));
+        
+        // Update command
+        sender.sendMessage(prefix.append(
+            Component.text("/tsadmin update", NamedTextColor.GRAY)
+                .hoverEvent(Component.text("Click to force update TeamSpeak user list"))
+                .clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand("/tsadmin update"))
+            ).append(Component.text(" - Force update TeamSpeak user list", NamedTextColor.WHITE)));
+        
+        // Status command
+        sender.sendMessage(prefix.append(
+            Component.text("/tsadmin status", NamedTextColor.GRAY)
+                .hoverEvent(Component.text("Click to show plugin status"))
+                .clickEvent(net.kyori.adventure.text.event.ClickEvent.runCommand("/tsadmin status"))
+            ).append(Component.text(" - Show plugin status", NamedTextColor.WHITE)));
     }
 
     private void handleReload(CommandSender sender) {
@@ -84,15 +99,19 @@ public class TeamSpeakAdminCommand implements CommandExecutor {
         sender.sendMessage(prefix.append(Component.text("TeamSpeak Connection: ", NamedTextColor.GRAY))
             .append(Component.text(isConnected ? "Connected" : "Disconnected", 
                 isConnected ? NamedTextColor.GREEN : NamedTextColor.RED)));
+
+        // TeamSpeak Server Info
+        String tsHost = plugin.getConfigManager().getTeamSpeakHost();
+        int tsPort = plugin.getConfigManager().getTeamSpeakVirtualServerPort();
+        sender.sendMessage(prefix.append(Component.text("TeamSpeak Server: ", NamedTextColor.GRAY))
+            .append(Component.text(tsHost + ":" + tsPort, NamedTextColor.YELLOW)));
         
-        // User count
-        int onlineUsers = (int) plugin.getTeamSpeakManager().getUserCache().values().stream()
-            .filter(TeamSpeakUser::isOnline)
-            .count();
-        sender.sendMessage(prefix.append(Component.text("Online Users: ", NamedTextColor.GRAY))
-            .append(Component.text(String.valueOf(onlineUsers), NamedTextColor.YELLOW)));
-        
-        // Database status
+        // Database Type
+        String dbType = plugin.getConfigManager().getDatabaseType();
+        sender.sendMessage(prefix.append(Component.text("Database Type: ", NamedTextColor.GRAY))
+            .append(Component.text(dbType.toUpperCase(), NamedTextColor.YELLOW)));
+
+        // Database Connection Status
         try {
             plugin.getDatabaseManager().isAccountLinked(java.util.UUID.randomUUID())
                 .thenAccept(result -> sender.sendMessage(prefix
@@ -102,6 +121,13 @@ public class TeamSpeakAdminCommand implements CommandExecutor {
             sender.sendMessage(prefix.append(Component.text("Database Connection: ", NamedTextColor.GRAY))
                 .append(Component.text("Error", NamedTextColor.RED)));
         }
+        
+        // User count
+        int onlineUsers = (int) plugin.getTeamSpeakManager().getUserCache().values().stream()
+            .filter(TeamSpeakUser::isOnline)
+            .count();
+        sender.sendMessage(prefix.append(Component.text("Online Users: ", NamedTextColor.GRAY))
+            .append(Component.text(String.valueOf(onlineUsers), NamedTextColor.YELLOW)));
 
         // Show online users
         if (isConnected && onlineUsers > 0) {

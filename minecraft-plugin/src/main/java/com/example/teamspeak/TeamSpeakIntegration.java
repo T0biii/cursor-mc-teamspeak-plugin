@@ -5,6 +5,7 @@ import com.example.teamspeak.database.DatabaseManager;
 import com.example.teamspeak.teamspeak.TeamSpeakManager;
 import com.example.teamspeak.commands.TeamSpeakCommand;
 import com.example.teamspeak.commands.TeamSpeakAdminCommand;
+import com.example.teamspeak.commands.TeamSpeakAdminTabCompleter;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -29,6 +30,7 @@ public class TeamSpeakIntegration extends JavaPlugin {
         // Register commands
         getCommand("ts").setExecutor(new TeamSpeakCommand(this));
         getCommand("tsadmin").setExecutor(new TeamSpeakAdminCommand(this));
+        getCommand("tsadmin").setTabCompleter(new TeamSpeakAdminTabCompleter());
         
         // Start TeamSpeak connection and user list updates
         teamSpeakManager.connect();
