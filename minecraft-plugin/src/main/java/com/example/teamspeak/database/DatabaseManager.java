@@ -3,8 +3,6 @@ package com.example.teamspeak.database;
 import com.example.teamspeak.TeamSpeakIntegration;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import org.bukkit.Bukkit;
-
 import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
