@@ -44,10 +44,12 @@ cache:
 
 # Messages
 messages:
-  prefix: "&8[&bTS&8] &r"
-  link_success: "&aSuccessfully linked your Minecraft account with TeamSpeak!"
-  link_failed: "&cFailed to link accounts. Please make sure you're connected to TeamSpeak."
-  unlink_success: "&aSuccessfully unlinked your Minecraft account from TeamSpeak."
-  not_linked: "&cYour account is not linked to TeamSpeak."
-  already_linked: "&cYour account is already linked to TeamSpeak."
-  invalid_code: "&cInvalid verification code. Please try again." 
+  prefix: "<dark_gray>[<aqua>TS</aqua>]</dark_gray> "
+  already_linked: "<red>Dein Minecraft-Account ist bereits mit TeamSpeak verknüpft!</red>"
+  not_linked: "<red>Dein Minecraft-Account ist nicht mit TeamSpeak verknüpft!</red>"
+  unlink_success: "<green>Dein Minecraft-Account wurde erfolgreich von TeamSpeak getrennt!</green>"
+  link_success: "<green>Dein Minecraft-Account wurde erfolgreich mit TeamSpeak verknüpft!</green>"
+  verification_code: "<yellow>Bitte verbinde dich mit TeamSpeak und gib folgenden Code im Chat ein: <green>{code}</green></yellow>"
+  teamspeak_not_connected: "<red>Der TeamSpeak-Server ist derzeit nicht verbunden!</red>"
+  online_users_header: "<yellow>Online TeamSpeak Benutzer:</yellow>"
+  online_user_format: "<gray>• </gray><white>{username}</white>"
